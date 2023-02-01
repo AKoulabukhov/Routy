@@ -3,7 +3,7 @@
 import UIKit
 import Routy
 
-protocol ViewControllerContainer: UIViewController {
+public protocol ViewControllerContainer: UIViewController {
     var containedViewControllers: [UIViewController] { get }
     func `switch`(
         to viewController: UIViewController,
@@ -13,11 +13,11 @@ protocol ViewControllerContainer: UIViewController {
 }
 
 extension UINavigationController: ViewControllerContainer {
-    var containedViewControllers: [UIViewController] {
+    public var containedViewControllers: [UIViewController] {
         viewControllers
     }
 
-    func `switch`(
+    public func `switch`(
         to viewController: UIViewController,
         animated: Bool,
         completion: RouteCompletion?
@@ -45,11 +45,11 @@ extension UINavigationController: ViewControllerContainer {
 }
 
 extension UITabBarController: ViewControllerContainer {
-    var containedViewControllers: [UIViewController] {
+    public var containedViewControllers: [UIViewController] {
         viewControllers ?? []
     }
 
-    func `switch`(
+    public func `switch`(
         to viewController: UIViewController,
         animated: Bool,
         completion: RouteCompletion?
