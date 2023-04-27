@@ -1,4 +1,5 @@
 # Routy
+![example workflow](https://github.com/AKoulabukhov/Routy/actions/workflows/swift.yml/badge.svg)
 
 Context based navigation written in Swift. Contains basic navigation logic in `Routy` module and extended functionality for iOS platform in `RoutyIOS`.
 
