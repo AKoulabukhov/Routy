@@ -47,6 +47,8 @@ public struct RootTransition: NavigationTransitionProtocol {
         }
         dismissViewControllersIfNeeded {
             if animated {
+                viewController.view.frame = keyWindow.bounds
+                viewController.view.layoutIfNeeded()
                 UIView.transition(
                     with: keyWindow,
                     duration: CATransaction.animationDuration(),
