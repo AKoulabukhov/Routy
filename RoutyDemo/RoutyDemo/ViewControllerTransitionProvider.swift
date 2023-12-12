@@ -8,6 +8,12 @@ final class ViewControllerTransitionProvider: NavigationTransitionProviderProtoc
         for context: NavigationContext<ViewControllerType>,
         in stack: [UIViewController]
     ) -> NavigationTransitionProtocol? {
+        if case .dismissBlueModal = context.type {
+            return DismissTransition(
+                screenType: ViewControllerType.blueModal,
+                stack: stack
+            )
+        }
         return BackstackTransition(
             stack: stack,
             context: context
@@ -42,6 +48,8 @@ final class ViewControllerTransitionProvider: NavigationTransitionProviderProtoc
                 presentingViewController: presentingViewController,
                 viewController: element
             )
+        case .dismissBlueModal:
+            return nil
         }
     }
 

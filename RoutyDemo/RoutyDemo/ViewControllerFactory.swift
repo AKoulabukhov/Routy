@@ -75,7 +75,8 @@ final class ViewControllerFactory: NavigationElementFactoryProtocol {
             )
         case .blueModal:
             return FakeViewController(
-                color: .blue
+                color: .blue,
+                actions: [makeRouteAction(to: .dismissBlueModal)]
             )
         case .greenModal:
             return FakeViewController(
@@ -130,6 +131,8 @@ final class ViewControllerFactory: NavigationElementFactoryProtocol {
                     makeRouteAction(to: .purplePush),
                 ]
             )
+        case .dismissBlueModal:
+            return nil
         }
     }
     
