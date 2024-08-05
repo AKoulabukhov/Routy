@@ -11,29 +11,42 @@ final class MockNavigationTransitionProvider: NavigationTransitionProviderProtoc
         return _getNavigationStack.output
     }
 
-    var _makeTransitionForContext = MockInvocation<(
+    var _makeReuseTransition = MockInvocation<(
         context: NavigationContext<MockNavigationContextType>,
         stack: [MockNavigationElement]
     ), NavigationTransitionProtocol?>()
 
-    func makeTransition(
+    func makeReuseTransition(
         for context: NavigationContext<MockNavigationContextType>,
         in stack: [MockNavigationElement]
     ) -> NavigationTransitionProtocol? {
-        _makeTransitionForContext.calls.append((context, stack))
-        return _makeTransitionForContext.output
+        _makeReuseTransition.calls.append((context, stack))
+        return _makeReuseTransition.output
     }
 
-    var _makeTransitionForElement = MockInvocation<(
+    var _makePresentTransition = MockInvocation<(
         element: MockNavigationElement,
         stack: [MockNavigationElement]
     ), NavigationTransitionProtocol?>()
 
-    func makeTransition(
+    func makePresentTransition(
         for element: MockNavigationElement,
         in stack: [MockNavigationElement]
     ) -> NavigationTransitionProtocol? {
-        _makeTransitionForElement.calls.append((element, stack))
-        return _makeTransitionForElement.output
+        _makePresentTransition.calls.append((element, stack))
+        return _makePresentTransition.output
+    }
+
+    var _makeDismissTransition = MockInvocation<(
+        context: NavigationContext<MockNavigationContextType>,
+        stack: [MockNavigationElement]
+    ), NavigationTransitionProtocol?>()
+
+    func makeDismissTransition(
+        for context: NavigationContext<MockNavigationContextType>,
+        in stack: [MockNavigationElement]
+    ) -> NavigationTransitionProtocol? {
+        _makeDismissTransition.calls.append((context, stack))
+        return _makeDismissTransition.output
     }
 }

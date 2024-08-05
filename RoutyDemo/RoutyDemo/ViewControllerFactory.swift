@@ -8,26 +8,39 @@ let router = Router(
     transitionProvider: ViewControllerTransitionProvider()
 )
 
-func routePrintCompletion(to: ViewControllerType) {
-    router.route(to: to, completion: {
+func presentPrintCompletion(to: ViewControllerType) {
+    router.present(to, completion: {
         print("Finished presentation for \(String(describing: to)), isSuccess = \($0)")
     })
 }
 
-func routePrintCompletion(to: [ViewControllerType]) {
-    router.route(to: to, completion: {
+func presentPrintCompletion(to: [ViewControllerType]) {
+    router.present(to, completion: {
         print("Finished presentation for \(to.map { String(describing: $0) }.joined(separator: ", ")), isSuccess = \($0)")
     })
 }
 
-func makeRouteAction(to: ViewControllerType) -> FakeViewController.Action {
+func dismissPrintCompletion(of: ViewControllerType) {
+    router.dismiss(of, completion: {
+        print("Finished dismiss for \(String(describing: of)), isSuccess = \($0)")
+    })
+}
+
+func makePresentAction(to: ViewControllerType) -> FakeViewController.Action {
     .init(
         title: String(describing: to),
-        action: { routePrintCompletion(to: to) }
+        action: { presentPrintCompletion(to: to) }
     )
 }
 
-func makeRouteAction(
+func makeDismissAction(of: ViewControllerType) -> FakeViewController.Action {
+    .init(
+        title: "Dismiss " + String(describing: of),
+        action: { dismissPrintCompletion(of: of) }
+    )
+}
+
+func makePresentAction(
     to: ViewControllerType,
     payload: NavigationContextPayloadProtocol,
     payloadText: String
@@ -37,17 +50,17 @@ func makeRouteAction(
     return .init(
         title: description,
         action: {
-            router.route(to: context, completion: {
+            router.present(context, completion: {
                 print("Finished presentation for \(description), isSuccess = \($0)")
             })
         }
     )
 }
 
-func makeRouteAction(to: [ViewControllerType]) -> FakeViewController.Action {
+func makePresentAction(to: [ViewControllerType]) -> FakeViewController.Action {
     .init(
         title: to.map { String(describing: $0) }.joined(separator: ", "),
-        action: { routePrintCompletion(to: to) }
+        action: { presentPrintCompletion(to: to) }
     )
 }
 
@@ -58,30 +71,30 @@ final class ViewControllerFactory: NavigationElementFactoryProtocol {
         case .rootScreen:
             return FakeViewController(
                 actions: [
-                    makeRouteAction(to: .blueModal),
-                    makeRouteAction(to: .greenModal),
-                    makeRouteAction(to: [.blueModal, .greenModal]),
-                    makeRouteAction(to: .redNavigation),
-                    makeRouteAction(to: [.redNavigation, .purplePush]),
-                    makeRouteAction(to: .rootScreen2),
+                    makePresentAction(to: .blueModal),
+                    makePresentAction(to: .greenModal),
+                    makePresentAction(to: [.blueModal, .greenModal]),
+                    makePresentAction(to: .redNavigation),
+                    makePresentAction(to: [.redNavigation, .purplePush]),
+                    makePresentAction(to: .rootScreen2),
                 ]
             )
         case .rootScreen2:
             return FakeViewController(
                 color: .systemBrown,
                 actions: [
-                    makeRouteAction(to: .rootScreen),
+                    makePresentAction(to: .rootScreen),
                 ]
             )
         case .blueModal:
             return FakeViewController(
                 color: .blue,
-                actions: [makeRouteAction(to: .dismissBlueModal)]
+                actions: [makeDismissAction(of: .blueModal)]
             )
         case .greenModal:
             return FakeViewController(
                 color: .green,
-                actions: [makeRouteAction(to: .rootScreen)]
+                actions: [makePresentAction(to: .rootScreen)]
             )
         case .redNavigation:
             let redPush = NavigationContext(
@@ -97,9 +110,9 @@ final class ViewControllerFactory: NavigationElementFactoryProtocol {
             return FakeViewController(
                 color: .purple,
                 actions: [
-                    makeRouteAction(to: .redPush),
-                    makeRouteAction(to: .rootScreen),
-                    makeRouteAction(
+                    makePresentAction(to: .redPush),
+                    makePresentAction(to: .rootScreen),
+                    makePresentAction(
                         to: .contextChanging,
                         payload: ContextChangingPayload(
                             color: .systemTeal
@@ -112,27 +125,25 @@ final class ViewControllerFactory: NavigationElementFactoryProtocol {
             return FakeViewController(
                 color: .red,
                 actions: [
-                    makeRouteAction(to: .purplePush),
-                    makeRouteAction(to: .rootScreen),
-                    makeRouteAction(to: .contextChanging),
+                    makePresentAction(to: .purplePush),
+                    makePresentAction(to: .rootScreen),
+                    makePresentAction(to: .contextChanging),
                 ]
             )
         case .contextChanging:
             return FakeContextChangingViewController(
                 color: (context.payload as? ContextChangingPayload)?.color ?? .systemBackground,
                 actions: [
-                    makeRouteAction(
+                    makePresentAction(
                         to: .contextChanging,
                         payload: ContextChangingPayload(
                             color: .systemFill
                         ),
                         payloadText: "system fill"
                     ),
-                    makeRouteAction(to: .purplePush),
+                    makePresentAction(to: .purplePush),
                 ]
             )
-        case .dismissBlueModal:
-            return nil
         }
     }
     

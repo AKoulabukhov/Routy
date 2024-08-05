@@ -21,8 +21,9 @@ final class RouterTests: XCTestCase {
         stackProvider = .init()
         stackProvider._getNavigationStack.output = []
         transitionProvider = .init()
-        transitionProvider._makeTransitionForContext.output = .some(nil)
-        transitionProvider._makeTransitionForElement.output = .some(nil)
+        transitionProvider._makeReuseTransition.output = .some(nil)
+        transitionProvider._makePresentTransition.output = .some(nil)
+        transitionProvider._makeDismissTransition.output = .some(nil)
         queue = .init()
         sut = .init(
             elementFactory: elementFactory,
@@ -42,13 +43,13 @@ final class RouterTests: XCTestCase {
     }
 
     func testThatWhenRouteRequestedThenOperationAddedToTheQueue() {
-        sut.route(to: .type1, completion: nil)
+        sut.present(.type1, completion: nil)
 
         XCTAssertEqual(queue._enqueue.callsCount, 1)
     }
 
     func testThatWhenRouteSequenceRequestedThenSingleOperationAddedToTheQueue() {
-        sut.route(to: [.type1, .type2], completion: nil)
+        sut.present([.type1, .type2], completion: nil)
 
         XCTAssertEqual(queue._enqueue.callsCount, 1)
     }
@@ -56,7 +57,7 @@ final class RouterTests: XCTestCase {
     func testThatIfContextTransitionExistsThenItPerformedWithoutElementCreation() {
         let transition = MockNavigationTransition()
         stackProvider._getNavigationStack.output = [MockNavigationElement()]
-        transitionProvider._makeTransitionForContext.output = transition
+        transitionProvider._makeReuseTransition.output = transition
         let context = MockNavigationContext(
             type: .type1,
             payload: MockNavigationContextPayload1(
@@ -64,49 +65,69 @@ final class RouterTests: XCTestCase {
             )
         )
 
-        sut.route(to: context, completion: nil)
+        sut.present(context, completion: nil)
         queue._enqueue.lastCall?({ })
 
-        XCTAssertEqual(transitionProvider._makeTransitionForContext.callsCount, 1)
-        XCTAssertEqual(transitionProvider._makeTransitionForContext.lastCall?.context, context)
-        XCTAssertEqual(transitionProvider._makeTransitionForContext.lastCall?.stack, stackProvider._getNavigationStack.output)
+        XCTAssertEqual(transitionProvider._makeReuseTransition.callsCount, 1)
+        XCTAssertEqual(transitionProvider._makeReuseTransition.lastCall?.context, context)
+        XCTAssertEqual(transitionProvider._makeReuseTransition.lastCall?.stack, stackProvider._getNavigationStack.output)
         XCTAssertEqual(transition._perform.callsCount, 1)
     }
 
-    func testThatWhenTransitionCompletesThenCopletionCalled() {
+    func testThatWhenDismissCalledThenDismissTransitionPerformed() {
         let transition = MockNavigationTransition()
-        transitionProvider._makeTransitionForContext.output = transition
+        stackProvider._getNavigationStack.output = [MockNavigationElement()]
+        transitionProvider._makeDismissTransition.output = transition
+        let context = MockNavigationContext(
+            type: .type1,
+            payload: MockNavigationContextPayload1(
+                field: "field"
+            )
+        )
+
+        sut.dismiss(context, completion: nil)
+        queue._enqueue.lastCall?({ })
+
+        XCTAssertEqual(transitionProvider._makeDismissTransition.callsCount, 1)
+        XCTAssertEqual(transitionProvider._makeDismissTransition.lastCall?.context, context)
+        XCTAssertEqual(transitionProvider._makeDismissTransition.lastCall?.stack, stackProvider._getNavigationStack.output)
+        XCTAssertEqual(transition._perform.callsCount, 1)
+    }
+
+    func testThatWhenTransitionCompletesThenCompletionCalled() {
+        let transition = MockNavigationTransition()
+        transitionProvider._makeReuseTransition.output = transition
         var completionHistory = [Bool]()
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
         transition._perform.lastCall??(true)
 
         XCTAssertEqual(completionHistory, [true])
     }
 
-    func testThatWhenTransitionFailsThenCopletionCalled() {
+    func testThatWhenTransitionFailsThenCompletionCalled() {
         let transition = MockNavigationTransition()
-        transitionProvider._makeTransitionForContext.output = transition
+        transitionProvider._makeReuseTransition.output = transition
         var completionHistory = [Bool]()
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
         transition._perform.lastCall??(false)
 
         XCTAssertEqual(completionHistory, [false])
     }
 
-    func testThatWhenTransitionSequenceCompletesThenCopletionCalledOnce() {
+    func testThatWhenTransitionSequenceCompletesThenCompletionCalledOnce() {
         let transition1 = MockNavigationTransition()
         let transition2 = MockNavigationTransition()
 
-        transitionProvider._makeTransitionForContext.output = transition1
+        transitionProvider._makeReuseTransition.output = transition1
         var completionHistory = [Bool]()
 
-        sut.route(to: [.type1, .type2], completion: { completionHistory.append($0) })
+        sut.present([.type1, .type2], completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ }) // Start execution
-        transitionProvider._makeTransitionForContext.output = transition2 // Update transition in advance to first one finished
+        transitionProvider._makeReuseTransition.output = transition2 // Update transition in advance to first one finished
 
         transition1._perform.lastCall??(true)
         transition2._perform.lastCall??(true)
@@ -114,24 +135,24 @@ final class RouterTests: XCTestCase {
         XCTAssertEqual(completionHistory, [true])
     }
 
-    func testThatWhenTransitionSequenceFailsThenNextNotRequestedAndCopletionCalledOnce() {
+    func testThatWhenTransitionSequenceFailsThenNextNotRequestedAndCompletionCalledOnce() {
         let transition = MockNavigationTransition()
-        transitionProvider._makeTransitionForContext.output = transition
+        transitionProvider._makeReuseTransition.output = transition
         var completionHistory = [Bool]()
 
-        sut.route(to: [.type1, .type2], completion: { completionHistory.append($0) })
+        sut.present([.type1, .type2], completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
 
         transition._perform.lastCall??(false)
 
-        XCTAssertEqual(transitionProvider._makeTransitionForContext.callsCount, 1)
+        XCTAssertEqual(transitionProvider._makeReuseTransition.callsCount, 1)
         XCTAssertEqual(completionHistory, [false])
     }
 
     func testThatWhenFailedToCreateElementThenRouteFails() {
         var completionHistory = [Bool]()
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
 
         XCTAssertEqual(completionHistory, [false])
@@ -149,15 +170,15 @@ final class RouterTests: XCTestCase {
             )
         )
 
-        sut.route(to: context, completion: { _ in })
+        sut.present(context, completion: { _ in })
         queue._enqueue.lastCall?({ })
 
         XCTAssertEqual(elementFactory._makeElement.callsCount, 1)
         XCTAssertEqual(elementFactory._makeElement.lastCall, context)
 
-        XCTAssertEqual(transitionProvider._makeTransitionForElement.callsCount, 1)
-        XCTAssertEqual(transitionProvider._makeTransitionForElement.lastCall?.element, element)
-        XCTAssertEqual(transitionProvider._makeTransitionForElement.lastCall?.stack, stackProvider._getNavigationStack.output)
+        XCTAssertEqual(transitionProvider._makePresentTransition.callsCount, 1)
+        XCTAssertEqual(transitionProvider._makePresentTransition.lastCall?.element, element)
+        XCTAssertEqual(transitionProvider._makePresentTransition.lastCall?.stack, stackProvider._getNavigationStack.output)
     }
 
     func testThatWhenElementCreatedWithoutContextThenContextSet() {
@@ -171,7 +192,7 @@ final class RouterTests: XCTestCase {
             )
         )
 
-        sut.route(to: context, completion: { _ in })
+        sut.present(context, completion: { _ in })
         queue._enqueue.lastCall?({ })
 
         XCTAssertEqual(element._setContext.callsCount, 1)
@@ -183,7 +204,7 @@ final class RouterTests: XCTestCase {
         element._hasContext.output = true
         elementFactory._makeElement.output = element
 
-        sut.route(to: .type1, completion: { _ in })
+        sut.present(.type1, completion: { _ in })
         queue._enqueue.lastCall?({ })
 
         XCTAssertEqual(element._setContext.callsCount, 0)
@@ -195,7 +216,7 @@ final class RouterTests: XCTestCase {
         element._hasContext.output = false
         elementFactory._makeElement.output = element
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
 
         XCTAssertEqual(completionHistory, [false])
@@ -207,9 +228,9 @@ final class RouterTests: XCTestCase {
         element._hasContext.output = false
         elementFactory._makeElement.output = element
         let transition = MockNavigationTransition()
-        transitionProvider._makeTransitionForElement.output = transition
+        transitionProvider._makePresentTransition.output = transition
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
         transition._perform.lastCall??(true)
 
@@ -221,9 +242,9 @@ final class RouterTests: XCTestCase {
         element._hasContext.output = false
         elementFactory._makeElement.output = element
         let transition = MockNavigationTransition()
-        transitionProvider._makeTransitionForElement.output = transition
+        transitionProvider._makePresentTransition.output = transition
 
-        sut.route(to: .type1, completion: { completionHistory.append($0) })
+        sut.present(.type1, completion: { completionHistory.append($0) })
         queue._enqueue.lastCall?({ })
         transition._perform.lastCall??(false)
 

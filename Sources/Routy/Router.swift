@@ -27,63 +27,42 @@ public final class Router<
         self.queue = queue
     }
 
-    public func route(
-        to contextType: ContextType,
+    public func perform(
+        steps: [NavigationStep<ContextType>],
         completion: RouteCompletion?
     ) {
-        route(
-            to: [contextType],
-            completion: completion
-        )
-    }
-
-    public func route(
-        to contextTypes: [ContextType],
-        completion: RouteCompletion?
-    ) {
-        route(
-            to: contextTypes.map {
-                NavigationContext(type: $0)
-            },
-            completion: completion
-        )
-    }
-
-    public func route(
-        to context: NavigationContext<ContextType>,
-        completion: RouteCompletion?
-    ) {
-        route(
-            to: [context],
-            completion: completion
-        )
-    }
-
-    public func route(
-        to contexts: [NavigationContext<ContextType>],
-        completion: RouteCompletion?
-    ) {
-        let performRoute = contexts
-            .map { makeRouteOperation(to: $0) }
+        let performSteps = steps
+            .map(makeStepOperation)
             .chained()
         queue.enqueue(
-            operation: { queueCompletion in
-                performRoute { routeResult in
-                    completion?(routeResult)
-                    queueCompletion()
+            operation: { operationCompletion in
+                performSteps { result in
+                    completion?(result)
+                    operationCompletion()
                 }
             }
         )
     }
 
-    private func makeRouteOperation(
+    private func makeStepOperation(
+        _ step: NavigationStep<ContextType>
+    ) -> RouteOperation {
+        switch step.intent {
+        case .present:
+            return makePresentOperation(to: step.context)
+        case .dismiss:
+            return makeDismissOperation(of: step.context)
+        }
+    }
+
+    private func makePresentOperation(
         to context: NavigationContext<ContextType>
     ) -> RouteOperation {
         return { [elementFactory, stackProvider, transitionProvider] completion in
 
             let stack = stackProvider.getNavigationStack()
 
-            if let transition = transitionProvider.makeTransition(
+            if let transition = transitionProvider.makeReuseTransition(
                 for: context,
                 in: stack
             ) {
@@ -100,7 +79,10 @@ public final class Router<
                 element.setNavigationContext(context)
             }
 
-            guard let transition = transitionProvider.makeTransition(for: element, in: stack) else {
+            guard let transition = transitionProvider.makePresentTransition(
+                for: element,
+                in: stack
+            ) else {
                 completion?(false)
                 return
             }
@@ -109,4 +91,22 @@ public final class Router<
         }
     }
 
+    private func makeDismissOperation(
+        of context: NavigationContext<ContextType>
+    ) -> RouteOperation {
+        return { [stackProvider, transitionProvider] completion in
+
+            let stack = stackProvider.getNavigationStack()
+
+            guard let transition = transitionProvider.makeDismissTransition(
+                for: context,
+                in: stack
+            ) else {
+                completion?(false)
+                return
+            }
+
+            transition.perform(completion: completion)
+        }
+    }
 }

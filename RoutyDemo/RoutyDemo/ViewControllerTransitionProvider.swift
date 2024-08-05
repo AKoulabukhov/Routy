@@ -4,23 +4,17 @@ import UIKit
 
 final class ViewControllerTransitionProvider: NavigationTransitionProviderProtocol {
 
-    func makeTransition(
+    func makeReuseTransition(
         for context: NavigationContext<ViewControllerType>,
         in stack: [UIViewController]
     ) -> NavigationTransitionProtocol? {
-        if case .dismissBlueModal = context.type {
-            return DismissTransition(
-                screenType: ViewControllerType.blueModal,
-                stack: stack
-            )
-        }
-        return BackstackTransition(
+        BackstackTransition(
             stack: stack,
             context: context
         )
     }
 
-    func makeTransition(
+    func makePresentTransition(
         for element: UIViewController,
         in stack: [UIViewController]
     ) -> NavigationTransitionProtocol? {
@@ -48,10 +42,17 @@ final class ViewControllerTransitionProvider: NavigationTransitionProviderProtoc
                 presentingViewController: presentingViewController,
                 viewController: element
             )
-        case .dismissBlueModal:
-            return nil
         }
     }
 
+    func makeDismissTransition(
+        for context: NavigationContext<ViewControllerType>,
+        in stack: [UIViewController]
+    ) -> NavigationTransitionProtocol? {
+        DismissTransition(
+            screenType: context.type,
+            stack: stack
+        )
+    }
 }
 

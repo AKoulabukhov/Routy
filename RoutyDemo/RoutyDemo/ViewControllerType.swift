@@ -13,8 +13,6 @@ enum ViewControllerType: Equatable {
     case purplePush
 
     case contextChanging
-
-    case dismissBlueModal
 }
 
 struct ContextChangingPayload: Equatable, NavigationContextPayloadProtocol {
