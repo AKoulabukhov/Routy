@@ -2,6 +2,7 @@
 
 import UIKit
 
+@MainActor 
 public protocol ViewControllerStackSearcherProtocol: AnyObject {
     typealias Predicate = (UIViewController) -> Bool
     func findPathForViewController(

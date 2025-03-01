@@ -1,3 +1,4 @@
+@MainActor
 public protocol NavigationTransitionProviderProtocol {
     associatedtype ContextType: Equatable
     associatedtype Element: NavigationElementProtocol

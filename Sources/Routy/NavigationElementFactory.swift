@@ -1,3 +1,4 @@
+@MainActor 
 public protocol NavigationElementFactoryProtocol {
     associatedtype ContextType: Equatable
     associatedtype Element: NavigationElementProtocol

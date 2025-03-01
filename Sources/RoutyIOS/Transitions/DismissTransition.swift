@@ -176,7 +176,7 @@ public final class DismissTransition<ScreenType: Equatable>: NavigationTransitio
 }
 
 private extension Array where Element == UIViewController {
-    func viewController(
+    @MainActor func viewController(
         at path: [Int],
         logError: (String) -> Void
     ) -> UIViewController? {

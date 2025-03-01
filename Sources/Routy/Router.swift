@@ -1,3 +1,4 @@
+@MainActor 
 public final class Router<
     ElementFactory: NavigationElementFactoryProtocol,
     StackProvider: NavigationStackProviderProtocol,

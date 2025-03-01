@@ -2,45 +2,45 @@ import Routy
 import RoutyIOS
 import UIKit
 
-let router = Router(
+@MainActor let router = Router(
     elementFactory: ViewControllerFactory(),
     stackProvider: ViewControllerStackProvider(),
     transitionProvider: ViewControllerTransitionProvider()
 )
 
-func presentPrintCompletion(to: ViewControllerType) {
+@MainActor func presentPrintCompletion(to: ViewControllerType) {
     router.present(to, completion: {
         print("Finished presentation for \(String(describing: to)), isSuccess = \($0)")
     })
 }
 
-func presentPrintCompletion(to: [ViewControllerType]) {
+@MainActor func presentPrintCompletion(to: [ViewControllerType]) {
     router.present(to, completion: {
         print("Finished presentation for \(to.map { String(describing: $0) }.joined(separator: ", ")), isSuccess = \($0)")
     })
 }
 
-func dismissPrintCompletion(of: ViewControllerType) {
+@MainActor func dismissPrintCompletion(of: ViewControllerType) {
     router.dismiss(of, completion: {
         print("Finished dismiss for \(String(describing: of)), isSuccess = \($0)")
     })
 }
 
-func makePresentAction(to: ViewControllerType) -> FakeViewController.Action {
+@MainActor func makePresentAction(to: ViewControllerType) -> FakeViewController.Action {
     .init(
         title: String(describing: to),
         action: { presentPrintCompletion(to: to) }
     )
 }
 
-func makeDismissAction(of: ViewControllerType) -> FakeViewController.Action {
+@MainActor func makeDismissAction(of: ViewControllerType) -> FakeViewController.Action {
     .init(
         title: "Dismiss " + String(describing: of),
         action: { dismissPrintCompletion(of: of) }
     )
 }
 
-func makePresentAction(
+@MainActor func makePresentAction(
     to: ViewControllerType,
     payload: NavigationContextPayloadProtocol,
     payloadText: String
@@ -57,7 +57,7 @@ func makePresentAction(
     )
 }
 
-func makePresentAction(to: [ViewControllerType]) -> FakeViewController.Action {
+@MainActor func makePresentAction(to: [ViewControllerType]) -> FakeViewController.Action {
     .init(
         title: to.map { String(describing: $0) }.joined(separator: ", "),
         action: { presentPrintCompletion(to: to) }

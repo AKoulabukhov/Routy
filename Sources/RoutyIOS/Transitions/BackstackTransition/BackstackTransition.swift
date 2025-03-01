@@ -3,7 +3,7 @@
 import Routy
 import UIKit
 
-public protocol PayloadUpdateableViewControllerProtocol: UIViewController {
+@MainActor public protocol PayloadUpdateableViewControllerProtocol: UIViewController {
     func canUpdate(with payload: NavigationContextPayloadProtocol?) -> Bool
     func update(with payload: NavigationContextPayloadProtocol?)
 }

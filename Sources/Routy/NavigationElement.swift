@@ -1,6 +1,6 @@
 import ObjectiveC
 
-public protocol NavigationElementProtocol {
+@MainActor public protocol NavigationElementProtocol {
     func setNavigationContext<ContextType: Equatable>(_ context: NavigationContext<ContextType>?)
     func getNavigationContext<ContextType: Equatable>(withContextType contextType: ContextType.Type) -> NavigationContext<ContextType>?
     var hasContext: Bool { get }
@@ -10,7 +10,7 @@ public protocol NavigationElementProtocol {
  Basic implementation for iOS / MacOS
  */
 
-private var associatedContextHolder = 0
+@MainActor private var associatedContextHolder = 0
 
 extension NavigationElementProtocol where Self: NSObject {
 
@@ -31,7 +31,7 @@ extension NavigationElementProtocol where Self: NSObject {
         (untypedContext as? NavigationContextClass)?.navigationContext
     }
 
-    private var untypedContext: Any? {
+    @MainActor private var untypedContext: Any? {
         objc_getAssociatedObject(
             self,
             &associatedContextHolder
