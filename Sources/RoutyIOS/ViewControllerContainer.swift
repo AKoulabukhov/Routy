@@ -3,6 +3,7 @@
 import UIKit
 import Routy
 
+@MainActor
 public protocol ViewControllerContainer: UIViewController {
     var containedViewControllers: [UIViewController] { get }
     func `switch`(
@@ -80,7 +81,7 @@ extension UIViewController {
 }
 
 extension Array where Element == UIViewController {
-    public func containedViewController(at indexPath: [Int]) -> UIViewController? {
+    @MainActor public func containedViewController(at indexPath: [Int]) -> UIViewController? {
         guard let rootIndex = indexPath.first, indices.contains(rootIndex) else { return nil }
         var currentViewController = self[rootIndex]
         for index in indexPath.dropFirst() {
