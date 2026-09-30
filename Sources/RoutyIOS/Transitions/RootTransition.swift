@@ -32,6 +32,7 @@ public struct RootTransition: NavigationTransitionProtocol {
         }
         let animated = animated
         let viewController = viewController
+        let customCompletion = self.completion
         let dismissViewControllersIfNeeded: ((() -> Void)?) -> Void = { completion in
             guard
                 let rootViewController = keyWindow.rootViewController,
@@ -57,11 +58,13 @@ public struct RootTransition: NavigationTransitionProtocol {
                         keyWindow.rootViewController = viewController
                     },
                     completion: { _ in
+                        customCompletion?()
                         completion?(true)
                     }
                 )
             } else {
                 keyWindow.rootViewController = viewController
+                customCompletion?()
                 completion?(true)
             }
         }
