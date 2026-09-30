@@ -5,6 +5,7 @@ import Routy
 
 public final class ViewControllerStackProvider: NavigationStackProviderProtocol {
     public typealias RootViewControllerProvider = () -> UIViewController?
+    public typealias WindowProvider = () -> UIWindow?
 
     private let rootViewControllerProvider: RootViewControllerProvider
 
@@ -13,6 +14,14 @@ public final class ViewControllerStackProvider: NavigationStackProviderProtocol 
     ) {
         self.rootViewControllerProvider = rootViewControllerProvider ?? {
             UIApplication.shared.rootViewController
+        }
+    }
+
+    /// Creates a stack provider scoped to a specific window.
+    /// Prefer this initializer in apps that support multiple scenes.
+    public init(windowProvider: @escaping WindowProvider) {
+        self.rootViewControllerProvider = {
+            windowProvider()?.rootViewController
         }
     }
 

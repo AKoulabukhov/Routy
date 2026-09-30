@@ -3,6 +3,7 @@
 import XCTest
 @testable import RoutyIOS
 
+@MainActor
 final class BackstackTransitionTests: XCTestCase {
     typealias BackstackTransition = RoutyIOS.BackstackTransition<MockNavigationContextType>
 
@@ -203,6 +204,33 @@ final class BackstackTransitionTests: XCTestCase {
         XCTAssertEqual(completions, [true])
     }
 
+    func testThatUpdateableControllerStoresUpdatedContext() throws {
+        let initialContext = MockNavigationContext(
+            type: .type1,
+            payload: MockNavigationContextPayload1(field: "initial")
+        )
+        let updatedContext = MockNavigationContext(
+            type: .type1,
+            payload: MockNavigationContextPayload1(field: "updated")
+        )
+        let stackSearcher = MockViewControllerStackSearcher()
+        stackSearcher._findPathForViewController.output = [0]
+        let viewController = MockPayloadUpdateableViewController()
+        viewController.setNavigationContext(initialContext)
+        let sut = makeSut(
+            stack: [viewController],
+            context: updatedContext,
+            stackSearcher: stackSearcher
+        )
+
+        sut?.perform(completion: nil)
+
+        let storedContext = viewController.getNavigationContext(
+            withContextType: MockNavigationContextType.self
+        )
+        XCTAssertEqual(storedContext, updatedContext)
+    }
+
     func testThatInNestedHierarchyDismissSwitchAndUpdatePayloadPerformedInCorrectOrder() throws {
         let context = MockNavigationContext(type: .type1)
         let stackSearcher = MockViewControllerStackSearcher()
@@ -257,8 +285,9 @@ final class BackstackTransitionTests: XCTestCase {
         stack: [UIViewController] = [],
         context: MockNavigationContext = MockNavigationContext(type: .type1, payload: nil),
         animated: Bool = true,
-        stackSearcher: MockViewControllerStackSearcher = MockViewControllerStackSearcher()
+        stackSearcher: MockViewControllerStackSearcher? = nil
     ) -> BackstackTransition? {
+        let stackSearcher = stackSearcher ?? MockViewControllerStackSearcher()
         if stackSearcher._findPathForViewController.output == nil {
             stackSearcher._findPathForViewController.output = []
         }

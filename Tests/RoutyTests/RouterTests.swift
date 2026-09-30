@@ -1,6 +1,7 @@
 import XCTest
 @testable import Routy
 
+@MainActor
 final class RouterTests: XCTestCase {
     private typealias Router = Routy.Router<
         MockNavigationElementFactory,

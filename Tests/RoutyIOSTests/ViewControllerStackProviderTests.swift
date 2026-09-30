@@ -3,6 +3,7 @@
 import XCTest
 @testable import RoutyIOS
 
+@MainActor
 final class ViewControllerStackProviderTests: XCTestCase {
 
     func testThatStackBuildFromPresentedViewControllers() {
@@ -27,6 +28,18 @@ final class ViewControllerStackProviderTests: XCTestCase {
         XCTAssertTrue(expectedStack.allSatisfy {
             $0._presentedViewController.callsCount == 1
         })
+    }
+
+    func testThatWindowProviderScopesStackToItsRootViewController() {
+        let window = UIWindow()
+        let rootViewController = UIViewController()
+        window.rootViewController = rootViewController
+
+        let actualStack = ViewControllerStackProvider(
+            windowProvider: { window }
+        ).getNavigationStack()
+
+        XCTAssertEqual(actualStack, [rootViewController])
     }
 
 }

@@ -6,6 +6,16 @@ import UIKit
 
 final class MockViewController: UIViewController {
 
+    var _presentingViewController = MockInvocation<Void, UIViewController?>()
+
+    override var presentingViewController: UIViewController? {
+        _presentingViewController.calls.append(())
+        if let presentingViewController = _presentingViewController.output {
+            return presentingViewController
+        }
+        return super.presentingViewController
+    }
+
     var _presentedViewController = MockInvocation<Void, UIViewController?>()
 
     override var presentedViewController: UIViewController? {
@@ -25,6 +35,19 @@ final class MockViewController: UIViewController {
         _dismiss.calls.append((flag, completion))
     }
 
+}
+
+final class MockNavigationController: UINavigationController {
+
+    var _presentingViewController = MockInvocation<Void, UIViewController?>()
+
+    override var presentingViewController: UIViewController? {
+        _presentingViewController.calls.append(())
+        if let presentingViewController = _presentingViewController.output {
+            return presentingViewController
+        }
+        return super.presentingViewController
+    }
 }
 
 final class MockContainerViewController: UIViewController, ViewControllerContainer {

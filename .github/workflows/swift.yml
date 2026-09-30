@@ -17,5 +17,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build
       run: swift build -v
-    - name: Run tests
+    - name: Run core tests
       run: swift test -v
+    - name: Run UIKit tests
+      shell: bash
+      run: |
+        device_id="$(xcrun simctl list devices available --json | jq -r '[.devices[][] | select(.name | startswith("iPhone"))][0].udid')"
+        test -n "$device_id"
+        xcodebuild -scheme Routy-Package -destination "platform=iOS Simulator,id=$device_id" test
