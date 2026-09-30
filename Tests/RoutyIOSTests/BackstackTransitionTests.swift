@@ -3,6 +3,7 @@
 import XCTest
 @testable import RoutyIOS
 
+@MainActor
 final class BackstackTransitionTests: XCTestCase {
     typealias BackstackTransition = RoutyIOS.BackstackTransition<MockNavigationContextType>
 
@@ -257,8 +258,9 @@ final class BackstackTransitionTests: XCTestCase {
         stack: [UIViewController] = [],
         context: MockNavigationContext = MockNavigationContext(type: .type1, payload: nil),
         animated: Bool = true,
-        stackSearcher: MockViewControllerStackSearcher = MockViewControllerStackSearcher()
+        stackSearcher: MockViewControllerStackSearcher? = nil
     ) -> BackstackTransition? {
+        let stackSearcher = stackSearcher ?? MockViewControllerStackSearcher()
         if stackSearcher._findPathForViewController.output == nil {
             stackSearcher._findPathForViewController.output = []
         }

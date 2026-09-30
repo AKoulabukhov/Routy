@@ -3,6 +3,7 @@
 import XCTest
 @testable import RoutyIOS
 
+@MainActor
 final class ViewControllerStackSearcherTests: XCTestCase {
 
     // MARK: - Logic tests
