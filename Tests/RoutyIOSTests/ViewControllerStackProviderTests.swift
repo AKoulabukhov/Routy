@@ -30,6 +30,18 @@ final class ViewControllerStackProviderTests: XCTestCase {
         })
     }
 
+    func testThatWindowProviderScopesStackToItsRootViewController() {
+        let window = UIWindow()
+        let rootViewController = UIViewController()
+        window.rootViewController = rootViewController
+
+        let actualStack = ViewControllerStackProvider(
+            windowProvider: { window }
+        ).getNavigationStack()
+
+        XCTAssertEqual(actualStack, [rootViewController])
+    }
+
 }
 
 #endif

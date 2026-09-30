@@ -22,7 +22,24 @@ Context is an equtable abstraction which has two properties:
 2. New deeplinks are easily supported. Just convert your link into sequence of contexts.
 3. Navigation can be easily intercepted. For example, some contexts require user to be authorized, so you can either do not return transition and handle failed transitions externally or return transition to Authorization screen passing desired screen in `AuthorizationContextPayload`, so after successfull authorization you'll be able to route user where he wanted to be.
 
-Routy is competely tested and RoutyIOS has tests for almost all the classes except simple wrappers for `.present`, `.push`.
+## Multi-scene apps
+
+Create a router for each scene and inject that scene's window into both the stack provider and root transitions. This prevents one scene from reading or replacing another scene's hierarchy:
+
+```swift
+let stackProvider = ViewControllerStackProvider(
+    windowProvider: { [weak window] in window }
+)
+
+let rootTransition = RootTransition(
+    viewController: viewController,
+    keyWindowProvider: { [weak window] in window }
+)
+```
+
+The parameterless providers remain available for single-window apps.
+
+Core routing and the non-trivial UIKit transitions are covered by tests. Simple wrappers around UIKit's `.present` and `.push` are intentionally kept thin.
 
 ## Contribution
 Feel free to raise issues and contribute to solve them :)
