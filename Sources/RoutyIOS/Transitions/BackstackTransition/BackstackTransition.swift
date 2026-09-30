@@ -91,6 +91,7 @@ public final class BackstackTransition<ContextType: Equatable>: NavigationTransi
             }
             if let updateableViewController = targetViewController as? PayloadUpdateableViewControllerProtocol {
                 updateableViewController.update(with: context.payload)
+                targetViewController.setNavigationContext(context)
                 completion?(true)
             } else {
                 assertionFailure("Incorrect view controller type")
